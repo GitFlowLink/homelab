@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>DevOps Quiz — m0rdaxa</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600&display=swap');
+:root{
+  --bg:#070d1a;--surface:#0e1628;--surface2:#141f35;--border:#1e2d4a;
+  --accent:#7fff6e;--accent2:#4fc3f7;--text:#e8eef8;--muted:#3d5070;
+  --danger:#ff5f5f;--success:#7fff6e;--warn:#f9a825;--partial:#ff9800;
+  --mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--sans);
+  min-height:100vh;padding:1.5rem 1rem;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(79,195,247,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(127,255,110,.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(14,22,40,.95) 0%, transparent 100%);
+  background-attachment:fixed;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(127,255,110,0)}50%{box-shadow:0 0 14px 2px rgba(127,255,110,.12)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes streakPop{0%{transform:scale(1)}30%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+.wrap{max-width:720px;margin:0 auto;animation:fadeUp .35s ease}
+
+/* HEADER */
+.header{border-left:3px solid var(--accent);padding-left:1rem;margin-bottom:1.5rem;position:relative}
+.header::after{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--accent2),transparent);opacity:.4}
+.header h1{font-size:20px;font-weight:600;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.header p{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:3px}
+.cursor{animation:blink 1s infinite;color:var(--accent)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;transition:all .4s}
+.sync-dot.ok{background:var(--success);box-shadow:0 0 8px rgba(127,255,110,.6)}
+.sync-dot.err{background:var(--danger)}
+
+/* NAV */
+.nav{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.nav-btn{padding:7px 16px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all .2s;position:relative}
+.nav-btn.active{border-color:var(--accent);color:var(--accent);animation:glowPulse 2.5s infinite}
+.nav-btn:hover:not(.active){border-color:#2a3d5a;color:var(--text)}
+
+/* PROGRESS */
+.prog-wrap{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.prog-bar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;position:relative}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1);position:relative}
+.prog-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2));animation:shimmer 1.5s infinite}
+.prog-text{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+
+/* STREAK */
+.streak{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:12px;color:var(--warn);padding:4px 12px;border:1px solid rgba(249,168,37,.3);border-radius:5px;margin-bottom:1rem;background:rgba(249,168,37,.05)}
+.streak.new{animation:streakPop .4s ease}
+.streak.hidden{display:none}
+
+/* CARD */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.5rem;margin-bottom:1rem;animation:fadeUp .3s ease;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(0,0,0,.3),0 1px 0 rgba(79,195,247,.05) inset;
+}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(127,255,110,.1),rgba(79,195,247,.1),transparent)}
+.cat-tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(127,255,110,.3);border-radius:4px;padding:2px 8px;margin-bottom:6px;background:rgba(127,255,110,.04)}
+.sub-tag{display:inline-block;font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:2px 8px;margin-bottom:10px;margin-left:6px}
+.question{font-size:15px;font-weight:500;line-height:1.65;margin-bottom:1.1rem}
+.code-block{background:#050c18;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-family:var(--mono);font-size:12px;color:#7a9bbf;margin-bottom:1.1rem;white-space:pre;overflow-x:auto;line-height:1.7;position:relative}
+.code-block::before{content:'bash';position:absolute;top:8px;right:12px;font-size:10px;color:rgba(127,255,110,.25);letter-spacing:.05em}
+
+/* FILL */
+.fill-input{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:13px 16px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:all .25s;width:100%}
+.fill-input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(79,195,247,.08),0 0 12px rgba(79,195,247,.05)}
+.fill-input.correct{border-color:var(--success);background:rgba(127,255,110,.06);animation:pop .35s ease}
+.fill-input.partial{border-color:var(--partial);background:rgba(255,152,0,.06);animation:pop .35s ease}
+.fill-input.wrong{border-color:var(--danger);background:rgba(255,95,95,.06);animation:shake .45s ease}
+.fill-input::placeholder{color:var(--muted)}
+.hint-row{display:flex;align-items:center;gap:6px;margin-top:7px}
+.hint{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* OPTIONS */
+.options{display:flex;flex-direction:column;gap:8px}
+.option{
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:13px 16px;font-size:13px;color:var(--text);cursor:pointer;
+  text-align:left;transition:all .2s;font-family:var(--sans);
+  position:relative;overflow:hidden;
+}
+.option::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .2s}
+.option:hover:not(:disabled){border-color:#2a3d5a;background:var(--surface);transform:translateX(3px)}
+.option:hover:not(:disabled)::before{background:var(--accent2)}
+.option:active:not(:disabled){transform:translateX(3px) scale(.99)}
+.option.correct{border-color:var(--success);background:rgba(127,255,110,.07);color:var(--success);animation:pop .35s ease}
+.option.correct::before{background:var(--success)}
+.option.wrong{border-color:var(--danger);background:rgba(255,95,95,.07);color:var(--danger);animation:shake .45s ease}
+.option.wrong::before{background:var(--danger)}
+
+/* MATCH */
+.match-wrap{display:flex;flex-direction:column;gap:9px}
+.match-row{display:grid;grid-template-columns:1fr 18px 1fr;gap:8px;align-items:center;animation:slideIn .25s ease both}
+.match-row:nth-child(2){animation-delay:.06s}.match-row:nth-child(3){animation-delay:.12s}.match-row:nth-child(4){animation-delay:.18s}
+.match-left{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:12px;color:var(--text)}
+.match-arrow{color:var(--muted);font-size:11px;text-align:center}
+.match-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-family:var(--mono);font-size:11px;color:var(--text);outline:none;cursor:pointer;width:100%;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.match-select:focus{border-color:var(--accent2)}
+.match-select.correct{border-color:var(--success);color:var(--success)}
+.match-select.wrong{border-color:var(--danger);color:var(--danger)}
+
+/* BUTTONS */
+.check-btn{margin-top:1rem;padding:11px 22px;background:transparent;border:1px solid var(--accent);border-radius:9px;color:var(--accent);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.check-btn:hover{background:rgba(127,255,110,.08);transform:translateY(-1px)}
+.check-btn:active{transform:translateY(0) scale(.98)}
+.next-btn{margin-top:1rem;padding:11px 24px;background:var(--accent);border:none;border-radius:9px;color:#050d1a;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;display:none;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.next-btn:hover{opacity:.85;transform:translateY(-1px)}
+.next-btn:active{transform:translateY(0) scale(.98)}
+.next-btn.show{display:inline-block;animation:fadeUp .25s ease}
+
+/* FEEDBACK */
+.feedback{margin-top:1rem;padding:13px 15px;border-radius:10px;font-size:12px;line-height:1.75;display:none}
+.feedback.show{display:block;animation:fadeUp .25s ease}
+.feedback.correct{background:rgba(127,255,110,.08);border:1px solid rgba(127,255,110,.2);color:#a5d6a7}
+.feedback.partial{background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.2);color:#ffb74d}
+.feedback.wrong{background:rgba(255,95,95,.08);border:1px solid rgba(255,95,95,.2);color:#ff8a80}
+.partial-badge{font-size:10px;font-family:var(--mono);color:var(--partial);border:1px solid rgba(255,152,0,.4);border-radius:3px;padding:1px 6px;margin-left:6px}
+
+/* RESULT */
+.result{text-align:center;padding:2.5rem 0;animation:fadeUp .4s ease}
+.score-big{font-size:72px;font-weight:600;font-family:var(--mono);color:var(--accent);line-height:1;text-shadow:0 0 30px rgba(127,255,110,.3),0 0 60px rgba(127,255,110,.1)}
+.score-sub{font-size:22px;color:var(--muted);font-family:var(--mono)}
+.score-msg{font-size:14px;color:var(--text);margin:1rem 0 1.5rem;line-height:1.7}
+.result-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.outline-btn{padding:11px 22px;background:transparent;border:1px solid var(--accent);border-radius:9px;color:var(--accent);font-family:var(--mono);font-size:13px;cursor:pointer;transition:all .2s}
+.outline-btn:hover{background:rgba(127,255,110,.08);transform:translateY(-1px)}
+
+/* PAGES */
+.stats-page,.quiz-page,.history-page{display:block}
+.stats-page.hide,.quiz-page.hide,.history-page.hide{display:none}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1.5rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;animation:fadeUp .3s ease;transition:transform .2s;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-num{font-size:26px;font-weight:600;font-family:var(--mono)}
+.stat-label{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.stat-num.green{color:var(--success)}.stat-num.red{color:var(--danger)}.stat-num.yellow{color:var(--warn)}
+.section-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.8rem;margin-top:1.2rem}
+.cat-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;animation:fadeUp .3s ease;transition:border-color .2s;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.cat-block:hover{border-color:#2a3d5a}
+.cat-header{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
+.cat-header:hover{background:var(--surface2)}
+.cat-name-wrap{display:flex;align-items:center;gap:8px}
+.cat-name{font-size:13px;font-weight:500}
+.weak-tag{font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--mono)}
+.weak-tag.bad{background:rgba(255,95,95,.15);color:var(--danger)}.weak-tag.ok{background:rgba(249,168,37,.15);color:var(--warn)}.weak-tag.good{background:rgba(127,255,110,.15);color:var(--success)}
+.cat-pct{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.cat-bar-wrap{padding:0 14px 4px}
+.cat-bar{height:3px;background:var(--border);border-radius:2px}
+.cat-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.subtopics{padding:0 14px 12px;display:none}
+.subtopics.open{display:block;animation:fadeUp .2s ease}
+.sub-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border)}
+.sub-name{font-size:12px;color:var(--muted);font-family:var(--mono);min-width:90px}
+.sub-stat{font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap}
+.sub-bar-wrap{flex:1;margin:0 10px;height:2px;background:var(--border);border-radius:1px}
+.sub-bar-fill{height:100%;border-radius:1px;transition:width .6s}
+.no-stats{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:12px}
+.danger-btn{padding:9px 18px;background:transparent;border:1px solid var(--danger);border-radius:9px;color:var(--danger);font-family:var(--mono);font-size:12px;cursor:pointer;margin-top:1rem;transition:all .2s}
+.danger-btn:hover{background:rgba(255,95,95,.08)}
+.resume-banner{background:rgba(127,255,110,.06);border:1px solid rgba(127,255,110,.2);border-radius:10px;padding:12px 16px;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;font-size:13px;animation:fadeUp .3s ease;box-shadow:0 2px 12px rgba(127,255,110,.05)}
+.resume-btn{padding:7px 16px;background:var(--accent);border:none;border-radius:7px;color:#050d1a;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* HISTORY TABLE */
+.history-table{width:100%;border-collapse:collapse;font-size:13px}
+.history-table th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:400}
+.history-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:12px;color:var(--text)}
+.history-table tr:last-child td{border-bottom:none}
+.history-table tr:hover td{background:var(--surface2)}
+.pct-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px}
+.pct-badge.good{background:rgba(127,255,110,.15);color:var(--success)}
+.pct-badge.ok{background:rgba(249,168,37,.15);color:var(--warn)}
+.pct-badge.bad{background:rgba(255,95,95,.15);color:var(--danger)}
+.history-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.no-history{text-align:center;padding:3rem;color:var(--muted);font-family:var(--mono);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>DevOps Quiz <span class="sync-dot" id="sync-dot"></span></h1>
+    <p>// m0rdaxa · bash · docker · kubernetes · linux · ci/cd<span class="cursor">_</span></p>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPage('quiz')">[ quiz ]</button>
+    <button class="nav-btn" onclick="showPage('stats')">[ статистика ]</button>
+    <button class="nav-btn" onclick="showPage('history')">[ история ]</button>
+  </div>
+
+  <div class="quiz-page" id="quiz-page">
+    <div id="resume-area"></div>
+    <div id="streak-area"></div>
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+      <span class="prog-text" id="prog-text">0 / 0</span>
+    </div>
+    <div id="quiz-area"></div>
+  </div>
+
+  <div class="stats-page hide" id="stats-page"><div id="stats-area"></div></div>
+  <div class="history-page hide" id="history-page"><div id="history-area"></div></div>
+</div>
+
+<script>
+// ===== AUDIO ENGINE =====
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return audioCtx;
+}
+function resumeAudio() {
+  const ctx = getAudio();
+  if (ctx && ctx.state === 'suspended') ctx.resume();
+}
+
+function playTone(freqs, dur, type='sine', vol=0.18) {
+  const ctx = getAudio(); if (!ctx) return;
+  freqs.forEach((freq, i) => {
+    setTimeout(() => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type; osc.frequency.value = freq;
+      const t = ctx.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.start(t); osc.stop(t + dur + 0.05);
+    }, i * (dur * 600));
+  });
+}
+
+function soundCorrect() {
+  playTone([523, 659, 784], 0.12, 'sine', 0.15);
+}
+function soundPartial() {
+  playTone([440, 494], 0.15, 'triangle', 0.12);
+}
+function soundWrong() {
+  const ctx = getAudio(); if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.2);
+  gain.gain.setValueAtTime(0.1, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+}
+function soundStreak() {
+  playTone([523, 659, 784, 1047], 0.1, 'sine', 0.14);
+}
+function soundComplete(pct) {
+  if (pct >= 85) {
+    playTone([523, 659, 784, 1047, 1319], 0.14, 'sine', 0.13);
+  } else if (pct >= 65) {
+    playTone([440, 523, 659], 0.14, 'sine', 0.12);
+  } else {
+    playTone([330, 294, 262], 0.18, 'triangle', 0.1);
+  }
+}
+
+// ===== API =====
+const API = '/api';
+async function api(method, path, body) {
+  try {
+    const o = {method, headers:{'Content-Type':'application/json'}};
+    if (body) o.body = JSON.stringify(body);
+    const r = await fetch(API + path, o);
+    if (!r.ok) throw new Error();
+    setSyncDot(true);
+    return await r.json();
+  } catch { setSyncDot(false); return null; }
+}
+function setSyncDot(ok) {
+  const d = document.getElementById('sync-dot');
+  d.className = 'sync-dot ' + (ok ? 'ok' : 'err');
+}
+
+// ===== LEVENSHTEIN =====
+function lev(a,b){
+  const m=a.length,n=b.length,dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i?j?0:i:j));
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+function matchResult(val, blank, alts) {
+  const n = s => s.toLowerCase().replace(/\s/g,'').replace(/[()]/g,'');
+  const v = n(val), b = n(blank);
+  if (v === b) return 'correct';
+  for (const a of (alts||[])) if (v === n(a)) return 'correct';
+  if (v.length >= 2 && (b.includes(v) || v.includes(b))) return 'partial';
+  if (b.length <= 10 && lev(v, b) === 1) return 'partial';
+  return 'wrong';
+}
+
+// ===== STATE =====
+let session=[], current=0, score=0, answered=false, streakCount=0;
+
+// ===== SESSION =====
+async function saveSession() {
+  if (current >= session.length) return;
+  await api('POST', '/session', {
+    current, score, streakCount,
+    order: session.map(q => ALL.indexOf(q))
+  });
+}
+
+async function loadAndResumeCheck() {
+  const s = await api('GET', '/session');
+  if (s && s.order && s.order.length > 0 && s.current > 0 && s.current < s.order.length) {
+    document.getElementById('resume-area').innerHTML = `
+      <div class="resume-banner">
+        <span>Продолжить с вопроса ${s.current + 1}/${s.order.length}?</span>
+        <button class="resume-btn" onclick="resumeSession()">Продолжить →</button>
+      </div>`;
+  }
+}
+
+async function resumeSession() {
+  const s = await api('GET', '/session');
+  if (!s || !s.order) { startQuiz(); return; }
+  session = s.order.map(i => ALL[i]);
+  current = s.current; score = s.score; streakCount = s.streakCount || 0;
+  answered = false;
+  document.getElementById('resume-area').innerHTML = '';
+  updateStreak(); renderQuestion();
+}
+
+async function startQuiz() {
+  document.getElementById('resume-area').innerHTML = '';
+  session = [...ALL].sort(() => Math.random() - .5);
+  current = 0; score = 0; streakCount = 0; answered = false;
+  await api('DELETE', '/session');
+  updateStreak(); renderQuestion();
+}
+
+// ===== STREAK =====
+function updateStreak() {
+  const el = document.getElementById('streak-area');
+  if (streakCount >= 3) {
+    const cur = el.querySelector('.streak');
+    if (cur) { cur.className = 'streak new'; setTimeout(() => cur.className = 'streak', 500); }
+    else el.innerHTML = `<div class="streak">🔥 серия ${streakCount}</div>`;
+    el.querySelector('.streak').textContent = `🔥 серия ${streakCount}`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+// ===== RENDER QUESTION =====
+function renderQuestion() {
+  const el = document.getElementById('quiz-area');
+  if (current >= session.length) { renderResult(); return; }
+  const q = session[current];
+  const pct = Math.round(current / session.length * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${current} / ${session.length}`;
+  answered = false;
+
+  let inner = `<span class="cat-tag">${q.cat}</span><span class="sub-tag">${q.sub}</span><div class="question">${q.q}</div>`;
+  if (q.code) inner += `<div class="code-block">${q.code}</div>`;
+
+  if (q.type === 'fill') {
+    inner += `<input class="fill-input" id="fill" type="text" placeholder="введи ответ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+    <div class="hint-row"><span class="hint">// подсказка: ${q.hint}</span></div>
+    <br><button class="check-btn" id="cbtn" onclick="checkFill()">Проверить →</button>`;
+  } else if (q.type === 'choice') {
+    inner += `<div class="options">` + q.opts.map((o,i) => `<button class="option" onclick="checkChoice(${i})">${o}</button>`).join('') + `</div>`;
+  } else if (q.type === 'match') {
+    const rights = [...q.pairs.map(p => p[1])].sort(() => Math.random() - .5);
+    inner += `<div class="match-wrap">` + q.pairs.map((p,i) => `
+      <div class="match-row">
+        <div class="match-left">${p[0]}</div>
+        <div class="match-arrow">→</div>
+        <select class="match-select" id="ms${i}">
+          <option value="">выбери...</option>
+          ${rights.map(r => `<option value="${r}">${r}</option>`).join('')}
+        </select>
+      </div>`).join('') + `</div>
+    <button class="check-btn" id="cbtn" onclick="checkMatch()">Проверить →</button>`;
+  }
+
+  inner += `<div class="feedback" id="fb"></div>
+    <button class="next-btn" id="nbtn" onclick="nextQ()">${current + 1 < session.length ? 'Следующий →' : 'Результат →'}</button>`;
+
+  el.innerHTML = `<div class="card">${inner}</div>`;
+
+  if (q.type === 'fill') {
+    const inp = document.getElementById('fill');
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { resumeAudio(); checkFill(); } });
+    setTimeout(() => inp.focus(), 100);
+  }
+}
+
+// ===== CHECK FUNCTIONS =====
+function applyResult(res) {
+  if (res === 'correct') { score++; streakCount++; soundCorrect(); if (streakCount >= 3 && streakCount % 3 === 0) setTimeout(soundStreak, 400); }
+  else if (res === 'partial') { score += 0.5; streakCount = 0; soundPartial(); }
+  else { streakCount = 0; soundWrong(); }
+  updateStreak();
+}
+
+function checkFill() {
+  if (answered) return;
+  resumeAudio();
+  answered = true;
+  const q = session[current];
+  const val = document.getElementById('fill').value.trim();
+  const res = matchResult(val, q.blank, q.alts || []);
+  document.getElementById('fill').classList.add(res);
+  document.getElementById('fill').disabled = true;
+  const cb = document.getElementById('cbtn'); if (cb) cb.style.display = 'none';
+  applyResult(res);
+  api('POST', '/stats/record', {cat: q.cat, subtopic: q.sub, correct: res === 'correct'});
+  saveSession();
+  showFeedback(res, q.exp, q.blank);
+}
+
+function checkChoice(i) {
+  if (answered) return;
+  resumeAudio();
+  answered = true;
+  const q = session[current];
+  document.querySelectorAll('.option').forEach(o => o.disabled = true);
+  const ok = i === q.ans;
+  document.querySelectorAll('.option')[i].classList.add(ok ? 'correct' : 'wrong');
+  if (!ok) document.querySelectorAll('.option')[q.ans].classList.add('correct');
+  applyResult(ok ? 'correct' : 'wrong');
+  api('POST', '/stats/record', {cat: q.cat, subtopic: q.sub, correct: ok});
+  saveSession();
+  showFeedback(ok ? 'correct' : 'wrong', q.exp, q.opts[q.ans]);
+}
+
+function checkMatch() {
+  if (answered) return;
+  resumeAudio();
+  answered = true;
+  const q = session[current];
+  let allOk = true;
+  q.pairs.forEach((p, i) => {
+    const sel = document.getElementById('ms' + i);
+    const ok = sel.value === p[1];
+    sel.classList.add(ok ? 'correct' : 'wrong');
+    sel.disabled = true;
+    if (!ok) allOk = false;
+  });
+  const cb = document.getElementById('cbtn'); if (cb) cb.style.display = 'none';
+  applyResult(allOk ? 'correct' : 'wrong');
+  api('POST', '/stats/record', {cat: q.cat, subtopic: q.sub, correct: allOk});
+  saveSession();
+  showFeedback(allOk ? 'correct' : 'wrong', q.exp, '');
+}
+
+function showFeedback(res, exp, correct) {
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback show ' + res;
+  if (res === 'correct') fb.innerHTML = '✓ ' + exp;
+  else if (res === 'partial') fb.innerHTML = `⚡ почти! правильно: <strong>${correct}</strong> <span class="partial-badge">частично</span><br>${exp}`;
+  else fb.innerHTML = (correct ? `✗ правильно: <strong>${correct}</strong><br>` : '✗ ') + exp;
+  document.getElementById('nbtn').classList.add('show');
+}
+
+async function nextQ() {
+  current++;
+  await saveSession();
+  renderQuestion();
+}
+
+// ===== RESULT =====
+async function renderResult() {
+  await api('DELETE', '/session');
+  document.getElementById('prog').style.width = '100%';
+  document.getElementById('prog-text').textContent = `${session.length} / ${session.length}`;
+  const pct = Math.round(score / session.length * 100);
+  const msg = pct >= 85 ? 'Отличный результат! Готов к собесу (｀・ω・´)✧'
+    : pct >= 65 ? 'Хорошо, но пробелы есть — загляни в статистику (⌒‿⌒)'
+    : 'Надо повторить — смотри статистику やばい';
+  document.getElementById('streak-area').innerHTML = '';
+
+  // save to history
+  await api('POST', '/history/add', {score: Math.round(score), total: session.length, pct});
+  setTimeout(() => soundComplete(pct), 300);
+
+  document.getElementById('quiz-area').innerHTML = `<div class="card result">
+    <div class="score-big">${Math.round(score)}<span class="score-sub">/${session.length}</span></div>
+    <div class="score-msg">${pct}% правильных ответов<br>${msg}</div>
+    <div class="result-btns">
+      <button class="outline-btn" onclick="startQuiz()">Ещё раз</button>
+      <button class="outline-btn" onclick="showPage('stats')">Статистика →</button>
+      <button class="outline-btn" onclick="showPage('history')">История →</button>
+    </div>
+  </div>`;
+}
+
+// ===== STATS =====
+async function renderStats() {
+  const data = await api('GET', '/stats');
+  const el = document.getElementById('stats-area');
+  if (!data || !data.stats || Object.keys(data.stats).length === 0) {
+    el.innerHTML = `<div class="no-stats">// нет данных — сначала пройди квиз</div>`; return;
+  }
+  const s = data.stats, keys = Object.keys(s);
+  const total = keys.reduce((a,k) => a + s[k].total, 0);
+  const totalOk = keys.reduce((a,k) => a + s[k].correct, 0);
+  const pct = Math.round(totalOk / total * 100);
+
+  const cats = {};
+  keys.forEach(k => {
+    const {cat, subtopic, correct, total:t} = s[k];
+    if (!cats[cat]) cats[cat] = {correct:0, total:0, subs:{}};
+    cats[cat].correct += correct; cats[cat].total += t;
+    if (subtopic) {
+      if (!cats[cat].subs[subtopic]) cats[cat].subs[subtopic] = {correct:0, total:0};
+      cats[cat].subs[subtopic].correct += correct;
+      cats[cat].subs[subtopic].total += t;
+    }
+  });
+
+  let html = `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">ответов</div></div>
+    <div class="stat-card"><div class="stat-num green">${totalOk}</div><div class="stat-label">верно</div></div>
+    <div class="stat-card"><div class="stat-num red">${total - totalOk}</div><div class="stat-label">ошибок</div></div>
+    <div class="stat-card"><div class="stat-num yellow">${pct}%</div><div class="stat-label">точность</div></div>
+  </div>`;
+
+  const weakSubs = [];
+  Object.entries(cats).forEach(([cat, cd]) => {
+    Object.entries(cd.subs).forEach(([sub, sd]) => {
+      if (sd.total >= 2) {
+        const p = Math.round(sd.correct / sd.total * 100);
+        if (p < 75) weakSubs.push({cat, sub, pct: p, correct: sd.correct, total: sd.total});
+      }
+    });
+  });
+  weakSubs.sort((a,b) => a.pct - b.pct);
+
+  if (weakSubs.length > 0) {
+    html += `<div class="section-title">⚠ подтяни эти темы</div>`;
+    weakSubs.slice(0, 6).forEach(w => {
+      const color = w.pct < 50 ? 'var(--danger)' : 'var(--partial)';
+      html += `<div class="cat-block">
+        <div class="cat-header" style="cursor:default">
+          <div class="cat-name-wrap"><span class="cat-name">${w.cat} → ${w.sub}</span><span class="weak-tag ${w.pct < 50 ? 'bad' : 'ok'}">${w.pct < 50 ? 'слабо' : 'учи'}</span></div>
+          <span class="cat-pct">${w.pct}%</span>
+        </div>
+        <div class="cat-bar-wrap"><div class="cat-bar"><div class="cat-fill" style="width:${w.pct}%;background:${color}"></div></div></div>
+        <div style="padding:0 14px 10px;font-size:11px;color:var(--muted);font-family:var(--mono)">${w.correct}/${w.total} правильно</div>
+      </div>`;
+    });
+  }
+
+  html += `<div class="section-title" style="margin-top:1.5rem">по темам ↓</div>`;
+  const sortedCats = Object.entries(cats).sort((a,b) =>
+    Math.round(a[1].correct/a[1].total*100) - Math.round(b[1].correct/b[1].total*100));
+
+  sortedCats.forEach(([cat, cd], ci) => {
+    const p = Math.round(cd.correct / cd.total * 100);
+    const color = p >= 80 ? 'var(--success)' : p >= 60 ? 'var(--warn)' : 'var(--danger)';
+    const tc = p >= 80 ? 'good' : p >= 60 ? 'ok' : 'bad';
+    const tt = p >= 80 ? 'ок' : p >= 60 ? 'учи' : 'слабо';
+    const subsHtml = Object.entries(cd.subs).map(([sub, sd]) => {
+      const sp = Math.round(sd.correct / sd.total * 100);
+      const sc = sp >= 80 ? 'var(--success)' : sp >= 60 ? 'var(--warn)' : 'var(--danger)';
+      return `<div class="sub-row"><span class="sub-name">${sub}</span><div class="sub-bar-wrap"><div class="sub-bar-fill" style="width:${sp}%;background:${sc}"></div></div><span class="sub-stat">${sd.correct}/${sd.total} · ${sp}%</span></div>`;
+    }).join('');
+    html += `<div class="cat-block">
+      <div class="cat-header" onclick="toggleSub('sub${ci}')">
+        <div class="cat-name-wrap"><span class="cat-name">${cat}</span><span class="weak-tag ${tc}">${tt}</span></div>
+        <span class="cat-pct">${p}% ↓</span>
+      </div>
+      <div class="cat-bar-wrap"><div class="cat-bar"><div class="cat-fill" style="width:${p}%;background:${color}"></div></div></div>
+      <div class="subtopics" id="sub${ci}">${subsHtml}</div>
+    </div>`;
+  });
+
+  html += `<div style="margin-top:1.5rem"><button class="danger-btn" onclick="if(confirm('Сбросить статистику?')){api('POST','/stats/reset',{}).then(renderStats)}">Сбросить статистику</button></div>`;
+  el.innerHTML = html;
+}
+
+// ===== HISTORY =====
+async function renderHistory() {
+  const data = await api('GET', '/history');
+  const el = document.getElementById('history-area');
+  if (!data || data.length === 0) {
+    el.innerHTML = `<div class="no-history">// нет истории — пройди квиз до конца</div>`; return;
+  }
+  const rows = [...data].reverse().map(h => {
+    const cls = h.pct >= 85 ? 'good' : h.pct >= 65 ? 'ok' : 'bad';
+    return `<tr>
+      <td>${h.date}</td>
+      <td>${h.time} UTC</td>
+      <td>${h.score}/${h.total}</td>
+      <td><span class="pct-badge ${cls}">${h.pct}%</span></td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div class="section-title">история прохождений</div>
+  <div class="history-wrap">
+    <table class="history-table">
+      <thead><tr><th>Дата</th><th>Время</th><th>Результат</th><th>%</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function toggleSub(id) { document.getElementById(id).classList.toggle('open'); }
+
+function showPage(p) {
+  ['quiz','stats','history'].forEach((name, i) => {
+    document.getElementById(name + '-page').classList.toggle('hide', p !== name);
+    document.querySelectorAll('.nav-btn')[i].classList.toggle('active', p === name);
+  });
+  if (p === 'stats') renderStats();
+  if (p === 'history') renderHistory();
+}
+
+// ===== QUESTIONS =====
+const ALL = [
+  {cat:'Bash',sub:'Основы',type:'fill',q:'Первая строка любого скрипта:',code:'_____/bin/bash\necho "Привет!"',blank:'#!/',alts:[],hint:'решётка + восклицательный знак',exp:'#!/bin/bash — shebang. Говорит системе каким интерпретатором запускать.'},
+  {cat:'Bash',sub:'Основы',type:'choice',q:'Что выведет скрипт?',code:'NAME="Vladimir"\necho "Привет, $NAME"',opts:['Привет, $NAME','Привет, Vladimir','Ошибку','Ничего'],ans:1,exp:'В двойных кавычках переменные подставляются.'},
+  {cat:'Bash',sub:'Основы',type:'fill',q:'Сделать файл исполняемым:',code:'_____ +x script.sh',blank:'chmod',alts:[],hint:'change mode',exp:'chmod +x — право на выполнение.'},
+  {cat:'Bash',sub:'Основы',type:'fill',q:'Записать вывод в файл:',code:'docker images _____ list.txt',blank:'>',alts:['>>'],hint:'один символ',exp:'> перезаписывает. >> добавляет в конец.'},
+  {cat:'Bash',sub:'Основы',type:'fill',q:'Сохранить результат команды:',code:'COUNT=_____docker ps -q | wc -l_____',blank:'$(  )',alts:['$()'],hint:'$() — command substitution',exp:'$() выполняет команду и подставляет результат.'},
+  {cat:'Bash',sub:'Основы',type:'choice',q:'Что значит $??',opts:['PID процесса','Exit code последней команды','Число аргументов','Имя скрипта'],ans:1,exp:'$? — exit code. 0 = успех, не 0 = ошибка.'},
+  {cat:'Bash',sub:'Основы',type:'choice',q:'Что выведет echo $? после успешного docker ps?',opts:['1','PID','0','127'],ans:2,exp:'0 = успех.'},
+  {cat:'Bash',sub:'Основы',type:'fill',q:'Текущая директория:',code:'echo _____',blank:'$PWD',alts:['$(pwd)'],hint:'переменная окружения',exp:'$PWD = current working directory.'},
+  {cat:'Bash',sub:'Основы',type:'choice',q:'Что делает set -e?',code:'#!/bin/bash\nset -e\ndocker stop fake\necho "готово"',opts:['Отладка','Стоп при первой ошибке','Игнорирует ошибки','Фон'],ans:1,exp:'set -e — скрипт остановится если любая команда вернёт не 0.'},
+  {cat:'Bash',sub:'Условия',type:'choice',q:'Что значит -eq?',code:'if [ $COUNT -eq 0 ]; then\n  echo "пусто"\nfi',opts:['Больше или равно','Не равно','Равно','Меньше'],ans:2,exp:'-eq = equal. -ne не равно, -gt больше, -lt меньше.'},
+  {cat:'Bash',sub:'Условия',type:'choice',q:'Что делает &&?',code:'docker start nginx && echo "запущен"',opts:['Всегда','Если первое упало','Если первое успешно','Параллельно'],ans:2,exp:'&& — второе только если первое успешно (exit 0).'},
+  {cat:'Bash',sub:'Условия',type:'choice',q:'Что делает ||?',code:'docker stop fake || echo "не нашёл"',opts:['Всегда','Если первое упало','Если первое успешно','Параллельно'],ans:1,exp:'|| — второе только если первое упало (exit != 0).'},
+  {cat:'Bash',sub:'Условия',type:'fill',q:'Проверить директорию:',code:'if [ _____ ~/backups ]; then\n  echo "есть"\nfi',blank:'-d',alts:[],hint:'directory',exp:'-d = directory. -f файл, -e что угодно.'},
+  {cat:'Bash',sub:'Условия',type:'fill',q:'Проверить файл:',code:'if [ _____ config.yml ]; then\n  echo "ок"\nfi',blank:'-f',alts:['-e'],hint:'file',exp:'-f = file. -e проверяет любое существование.'},
+  {cat:'Bash',sub:'Условия',type:'choice',q:'Что выведет если COUNT=5?',code:'if [ $COUNT -gt 3 ]; then\n  echo "много"\nelse\n  echo "мало"\nfi',opts:['мало','много','ошибку','ничего'],ans:1,exp:'-gt = greater than. 5 > 3 = true → "много".'},
+  {cat:'Bash',sub:'Условия',type:'choice',q:'Чем завершается if?',opts:['end','done','fi','endif'],ans:2,exp:'fi — if наоборот.'},
+  {cat:'Bash',sub:'Условия',type:'choice',q:'Что делает -ne?',opts:['Не существует','Не равно','Не пусто','Не файл'],ans:1,exp:'-ne = not equal.'},
+  {cat:'Bash',sub:'Циклы',type:'choice',q:'Что делает цикл?',code:'for c in $(docker ps --format "{{.Names}}"); do\n  echo "контейнер: $c"\ndone',opts:['Удаляет','Выводит имена запущенных','Останавливает','Считает'],ans:1,exp:'for итерирует по именам контейнеров.'},
+  {cat:'Bash',sub:'Циклы',type:'choice',q:'Как завершить for?',opts:['end','fi','done','stop'],ans:2,exp:'done — завершение for и while.'},
+  {cat:'Bash',sub:'Циклы',type:'fill',q:'Docker шаблон для имени:',code:'docker ps --format "_____"',blank:'{{.Names}}',alts:['{{.Name}}'],hint:'двойные фигурные скобки',exp:'{{.Names}} — Go template.'},
+  {cat:'Bash',sub:'Циклы',type:'choice',q:'Что будет если нет контейнеров?',code:'for c in $(docker ps -q); do\n  echo $c\ndone',opts:['Ошибку','Пустую строку','Ничего — цикл не выполнится','null'],ans:2,exp:'Пустой список — цикл не выполнится.'},
+  {cat:'Bash',sub:'Функции',type:'choice',q:'Что такое local?',code:'check() {\n  local RESULT="найдено"\n}\ncheck\necho $RESULT',opts:['Ничего','Умирает после функции','Делает глобальной','Ошибка'],ans:1,exp:'local — локальная переменная. Снаружи $RESULT пустой.'},
+  {cat:'Bash',sub:'Функции',type:'fill',q:'Первый аргумент функции:',code:'my_func() {\n  echo "привет, _____"\n}\nmy_func "Vladimir"',blank:'$1',alts:[],hint:'$номер',exp:'$1, $2, $3... — аргументы по порядку.'},
+  {cat:'Bash',sub:'Функции',type:'choice',q:'Как получить результат функции?',opts:['COUNT=get_count','COUNT=$(get_count)','COUNT=&get_count','COUNT=get_count()'],ans:1,exp:'echo внутри + $() снаружи.'},
+  {cat:'Bash',sub:'Функции',type:'choice',q:'Верный синтаксис функции?',opts:['function my_func {}','my_func() { }','def my_func():','func my_func() {}'],ans:1,exp:'имя_функции() { } — стандарт Bash.'},
+  {cat:'Bash',sub:'Функции',type:'fill',q:'Второй аргумент:',code:'deploy() {\n  IMAGE=$1\n  TAG=_____\n}',blank:'$2',alts:[],hint:'$два',exp:'$2 — второй аргумент.'},
+  {cat:'Bash',sub:'Пайп и текст',type:'choice',q:'Что делает |?',code:'docker ps -q | wc -l',opts:['Сравнивает','stdout первой → stdin второй','Параллельно','В файл'],ans:1,exp:'| — вывод одной во вход другой.'},
+  {cat:'Bash',sub:'Пайп и текст',type:'fill',q:'grep без регистра:',code:'kubectl logs pod | grep _____ error',blank:'-i',alts:[],hint:'ignore',exp:'-i найдёт error, Error, ERROR.'},
+  {cat:'Bash',sub:'Пайп и текст',type:'fill',q:'Первые N строк:',code:'cat file | _____ -10',blank:'head',alts:[],hint:'голова',exp:'head — первые строки.'},
+  {cat:'Bash',sub:'Пайп и текст',type:'fill',q:'Подсчитать строки:',code:'docker ps -q | _____ -l',blank:'wc',alts:[],hint:'word count',exp:'wc -l считает строки.'},
+  {cat:'Bash',sub:'Пайп и текст',type:'choice',q:'Что делает grep -q?',opts:['Считает','Тихий — только exit code','Рекурсивный','Регистр'],ans:1,exp:'-q без вывода, только exit code. Для if условий.'},
+  {cat:'Bash',sub:'Пайп и текст',type:'choice',q:'Что означает ^nginx$?',opts:['Начинается с nginx','Заканчивается nginx','Точно "nginx"','Содержит nginx'],ans:2,exp:'^ начало, $ конец. ^nginx$ = только "nginx".'},
+  {cat:'Bash',sub:'Пайп и текст',type:'fill',q:'Последние 20 строк файла:',code:'_____ -20 /var/log/syslog',blank:'tail',alts:[],hint:'хвост',exp:'tail -N последние строки. tail -f следит в реальном времени.'},
+  {cat:'Docker',sub:'Основы',type:'fill',q:'Запустить в фоне:',code:'docker run __ -p 8080:80 nginx',blank:'-d',alts:['--detach'],hint:'detach',exp:'-d — фоновый режим.'},
+  {cat:'Docker',sub:'Основы',type:'choice',q:'Что означает 8080:80?',opts:['80 внешний','8080 внешний (хост), 80 внутренний','Оба внешние','Оба внутренние'],ans:1,exp:'хост:контейнер.'},
+  {cat:'Docker',sub:'Основы',type:'choice',q:'docker ps vs docker ps -a?',opts:['Ничем','ps — запущенные, -a — все','ps -a — остановленные','Наоборот'],ans:1,exp:'-a (all) = Running + Stopped + Exited.'},
+  {cat:'Docker',sub:'Основы',type:'fill',q:'Логи контейнера:',code:'docker _____ my-container',blank:'logs',alts:[],hint:'4 буквы',exp:'docker logs — stdout + stderr.'},
+  {cat:'Docker',sub:'Основы',type:'fill',q:'Чистка всего неиспользуемого:',code:'docker system _____',blank:'prune',alts:[],hint:'обрезать',exp:'docker system prune — контейнеры, образы, сети, кэш.'},
+  {cat:'Docker',sub:'Основы',type:'fill',q:'Список образов:',code:'docker _____',blank:'images',alts:['image ls'],hint:'images',exp:'docker images или docker image ls.'},
+  {cat:'Docker',sub:'Основы',type:'choice',q:'Что делает docker exec -it?',opts:['Новый контейнер','Команда в запущенном','Останавливает','Логи'],ans:1,exp:'exec — команда внутри запущенного. -it = интерактивный терминал.'},
+  {cat:'Docker',sub:'Основы',type:'fill',q:'Остановить контейнер:',code:'docker _____ my-nginx',blank:'stop',alts:[],hint:'стоп',exp:'docker stop — мягкая остановка (SIGTERM).'},
+  {cat:'Docker',sub:'Основы',type:'choice',q:'Что делает --rm?',code:'docker run --rm nginx echo "привет"',opts:['Удаляет образ','Удаляет контейнер после завершения','Перезапускает','Переименовывает'],ans:1,exp:'--rm — автоудаление после остановки.'},
+  {cat:'Docker',sub:'Основы',type:'choice',q:'Детальная инфо о контейнере?',opts:['docker info','docker inspect my-container','docker details','docker show'],ans:1,exp:'docker inspect — JSON с полной информацией.'},
+  {cat:'Docker',sub:'Dockerfile',type:'fill',q:'Первая инструкция:',code:'_____ python:3.11-slim\nWORKDIR /app',blank:'FROM',alts:[],hint:'базовый образ',exp:'FROM — всегда первая инструкция.'},
+  {cat:'Docker',sub:'Dockerfile',type:'choice',q:'Что делает WORKDIR?',opts:['Создаёт юзера','Рабочая папка внутри','Копирует файлы','Порт'],ans:1,exp:'WORKDIR — рабочая директория для всех последующих команд.'},
+  {cat:'Docker',sub:'Dockerfile',type:'choice',q:'RUN vs CMD?',opts:['Одинаково','RUN при сборке, CMD при старте','CMD при сборке, RUN при старте','RUN только pip'],ans:1,exp:'RUN → docker build. CMD → docker run.'},
+  {cat:'Docker',sub:'Dockerfile',type:'choice',q:'Найди ошибку:',code:'FROM python:3.11\nWORKDIR /app\nRUN pip install flask\nCOPY app.py .\nCMD ["python","app.py"]',opts:['FROM','COPY до RUN — кэш не работает','CMD','Ошибок нет'],ans:1,exp:'Сначала зависимости (редко меняются), потом код (часто меняется) — лучше кэш.'},
+  {cat:'Docker',sub:'Dockerfile',type:'fill',q:'Открыть порт:',code:'FROM nginx\n_____ 80',blank:'EXPOSE',alts:[],hint:'expose',exp:'EXPOSE документирует порт. Реально открывает -p при run.'},
+  {cat:'Docker',sub:'Dockerfile',type:'choice',q:'COPY vs ADD?',opts:['Одинаково','COPY просто, ADD умеет архивы и URL','ADD быстрее','COPY для папок'],ans:1,exp:'Используй COPY если не нужен tar/URL.'},
+  {cat:'Docker',sub:'Dockerfile',type:'fill',q:'Переменная окружения:',code:'_____ APP_PORT=5000',blank:'ENV',alts:[],hint:'environment',exp:'ENV устанавливает переменную окружения.'},
+  {cat:'Docker',sub:'Compose',type:'choice',q:'build: . vs image: nginx?',opts:['build Python','build из Dockerfile, image с DockerHub','Ничем','image только nginx'],ans:1,exp:'build: . → Dockerfile. image: → DockerHub.'},
+  {cat:'Docker',sub:'Compose',type:'fill',q:'Запустить в фоне:',code:'docker compose up ___',blank:'-d',alts:['--detach'],hint:'detach',exp:'docker compose up -d — фон.'},
+  {cat:'Docker',sub:'Compose',type:'choice',q:'Что делает depends_on?',opts:['Пароль','Порядок запуска','Сеть','Копирует'],ans:1,exp:'depends_on — db стартует раньше app.'},
+  {cat:'Docker',sub:'Compose',type:'match',q:'Сопоставь ключи docker-compose:',pairs:[['ports','проброс портов'],['volumes','монтирует папку'],['environment','переменные окружения'],['depends_on','порядок запуска']],exp:'Ключевые поля docker-compose.'},
+  {cat:'Docker',sub:'Compose',type:'fill',q:'Остановить и удалить:',code:'docker compose _____',blank:'down',alts:[],hint:'вниз',exp:'docker compose down — стоп + удаление.'},
+  {cat:'Docker',sub:'Compose',type:'choice',q:'Логи сервиса?',opts:['--all','docker compose logs backend','--service=backend','logs backend'],ans:1,exp:'docker compose logs backend.'},
+  {cat:'Docker',sub:'Compose',type:'choice',q:'Что делает :z в volumes?',code:'- ./site:/usr/share/nginx/html:z',opts:['Только чтение','Сжатие','SELinux метка для Fedora/RHEL','Синхронизация'],ans:2,exp:':z — SELinux метка. На Fedora без неё контейнер не читает файлы хоста.'},
+  {cat:'Docker',sub:'Compose',type:'fill',q:'Перезапустить сервис:',code:'docker compose _____ backend',blank:'restart',alts:[],hint:'restart',exp:'docker compose restart backend.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'kubectl run vs create deployment?',opts:['Ничем','run — Pod без слежки, deployment следит','run быстрее','deployment только nginx'],ans:1,exp:'run — голый Pod. deployment — слежка + автовосстановление.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'Что такое desired state?',opts:['Текущее','Эталон который K8s поддерживает','Логи','Конфиг'],ans:1,exp:'Desired state — описание (replicas: 3). K8s приводит current к desired.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'Зачем Service?',opts:['Не нужен','Стабильный IP — поды меняют IP','Следит за подами','Ускоряет'],ans:1,exp:'Service — стабильный IP. Поды меняют IP при пересоздании.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'Rolling update?',opts:['Удаляет все сразу','По одному без даунтайма','Откат','Масштабирование'],ans:1,exp:'Rolling update — по одному. Пользователи ничего не замечают.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'match',q:'Компоненты K8s:',pairs:[['Scheduler','выбирает ноду для пода'],['Controller','следит за desired state'],['etcd','хранит состояние кластера'],['kubelet','запускает контейнеры на ноде']],exp:'Архитектура K8s.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'Что такое ReplicaSet?',opts:['То же что Deployment','Следит за количеством подов','Хранит данные','Сеть'],ans:1,exp:'ReplicaSet следит за количеством. Deployment управляет ReplicaSet + rolling update.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'Под из Deployment упал?',opts:['Навсегда','K8s создаст новый','Deployment удалится','Ошибка'],ans:1,exp:'Controller → Scheduler → новый под.'},
+  {cat:'Kubernetes',sub:'Концепции',type:'choice',q:'NodePort vs ClusterIP?',opts:['Ничем','NodePort — снаружи, ClusterIP — только внутри','ClusterIP быстрее','NodePort только nginx'],ans:1,exp:'ClusterIP — внутри кластера. NodePort — внешний доступ.'},
+  {cat:'Kubernetes',sub:'YAML файлы',type:'fill',q:'apiVersion для Deployment:',code:'apiVersion: _____\nkind: Deployment',blank:'apps/v1',alts:[],hint:'apps/v1',exp:'apps/v1 — запомни наизусть.'},
+  {cat:'Kubernetes',sub:'YAML файлы',type:'choice',q:'Почему labels = selector?',opts:['Стиль','По labels Deployment находит поды','YAML синтаксис','Без этого ошибка'],ans:1,exp:'По labels Deployment находит поды, Service роутит трафик.'},
+  {cat:'Kubernetes',sub:'YAML файлы',type:'fill',q:'Разделитель объектов:',code:'kind: Deployment\n...\n_____\nkind: Service',blank:'---',alts:[],hint:'три дефиса',exp:'--- разделяет объекты в одном файле.'},
+  {cat:'Kubernetes',sub:'YAML файлы',type:'choice',q:'Найди ошибку в YAML:',code:'spec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: nginx\n    template:\n      metadata:',opts:['replicas','template должен быть на уровне selector, не внутри','matchLabels','Ошибок нет'],ans:1,exp:'template на одном уровне с selector. Отступы в YAML критичны.'},
+  {cat:'Kubernetes',sub:'YAML файлы',type:'fill',q:'apiVersion для Service:',code:'apiVersion: _____\nkind: Service',blank:'v1',alts:[],hint:'просто v1',exp:'Service = core API = v1 (без apps/).'},
+  {cat:'Kubernetes',sub:'YAML файлы',type:'choice',q:'Диапазон NodePort:',opts:['1-65535','8000-9000','30000-32767','80-8080'],ans:2,exp:'30000-32767 — ограничение Kubernetes.'},
+  {cat:'Kubernetes',sub:'Команды',type:'fill',q:'Масштабировать до 5:',code:'kubectl _____ deployment/my-app --replicas=5',blank:'scale',alts:[],hint:'масштабировать',exp:'kubectl scale — мгновенно меняет реплики.'},
+  {cat:'Kubernetes',sub:'Команды',type:'fill',q:'Откатить деплой:',code:'kubectl rollout _____ deployment/my-app',blank:'undo',alts:[],hint:'отменить',exp:'kubectl rollout undo — откат к предыдущему ReplicaSet.'},
+  {cat:'Kubernetes',sub:'Команды',type:'fill',q:'Последние 20 строк логов:',code:'kubectl logs my-pod _____=20',blank:'--tail',alts:[],hint:'--tail',exp:'--tail=N — последние N строк.'},
+  {cat:'Kubernetes',sub:'Команды',type:'choice',q:'kubectl describe pod?',opts:['Удаляет','Логи','Детальная инфо + Events','Масштабирует'],ans:2,exp:'describe — полная инфо. Events — главное при дебаге.'},
+  {cat:'Kubernetes',sub:'Команды',type:'choice',q:'kubectl get all?',opts:['Только поды','Только деплойменты','Поды + сервисы + деплойменты + rs','Только сервисы'],ans:2,exp:'kubectl get all — общая картина.'},
+  {cat:'Kubernetes',sub:'Команды',type:'fill',q:'Применить YAML:',code:'kubectl _____ -f deployment.yaml',blank:'apply',alts:[],hint:'применить',exp:'kubectl apply -f — создаёт или обновляет из файла.'},
+  {cat:'Kubernetes',sub:'Команды',type:'choice',q:'IP Minikube?',opts:['kubectl get ip','minikube ip','kubectl cluster-info','minikube status'],ans:1,exp:'minikube ip — IP кластера.'},
+  {cat:'Kubernetes',sub:'Команды',type:'fill',q:'Обновить образ:',code:'kubectl set _____ deployment/app app=nginx:1.21',blank:'image',alts:[],hint:'image',exp:'kubectl set image запускает rolling update.'},
+  {cat:'Linux',sub:'Файловая система',type:'choice',q:'Что в /etc/?',opts:['Домашние папки','Конфиги программ','Временные файлы','Процессы'],ans:1,exp:'/etc/ — конфиги nginx, ssh, docker, systemd.'},
+  {cat:'Linux',sub:'Файловая система',type:'choice',q:'Что в /var/?',opts:['Утилиты','Логи и данные приложений','Конфиги','Устройства'],ans:1,exp:'/var/ — изменяемые данные. /var/log — логи.'},
+  {cat:'Linux',sub:'Файловая система',type:'choice',q:'Что такое /tmp/?',opts:['Конфиги','Временные файлы — удаляются при перезагрузке','Домашняя root','Программы'],ans:1,exp:'/tmp/ — автоочистка при перезагрузке.'},
+  {cat:'Linux',sub:'Файловая система',type:'fill',q:'Символ домашней папки:',code:'cd _____/projects',blank:'~',alts:[],hint:'тильда',exp:'~ = /home/username.'},
+  {cat:'Linux',sub:'Файловая система',type:'match',q:'Папки Linux:',pairs:[['/etc','конфиги'],['/var/log','логи'],['/tmp','временные файлы'],['/proc','инфо о процессах']],exp:'Стандартная структура Linux.'},
+  {cat:'Linux',sub:'Файловая система',type:'choice',q:'Что в /proc/?',opts:['Программы','Конфиги','Инфо о процессах и железе','Логи'],ans:2,exp:'/proc/ — виртуальная ФС. /proc/cpuinfo, /proc/meminfo.'},
+  {cat:'Linux',sub:'Файловая система',type:'choice',q:'Где системные утилиты (ls, grep)?',opts:['/etc','/bin','/tmp','/proc'],ans:1,exp:'/bin/ — базовые утилиты. /usr/bin/ — остальные.'},
+  {cat:'Linux',sub:'Процессы',type:'choice',q:'Что делает ps aux?',opts:['Диски','Все процессы','Сеть','Пользователи'],ans:1,exp:'ps aux — все процессы. a=все, u=подробно, x=без терминала.'},
+  {cat:'Linux',sub:'Процессы',type:'choice',q:'Что делает kill -9?',opts:['Мягко стоп','Принудительный kill (SIGKILL)','Перезапуск','Пауза'],ans:1,exp:'SIGKILL — процесс не может перехватить.'},
+  {cat:'Linux',sub:'Процессы',type:'fill',q:'Exit code успеха:',code:'docker ps\necho $?',blank:'0',alts:[],hint:'ноль',exp:'0 = успех.'},
+  {cat:'Linux',sub:'Процессы',type:'choice',q:'Что делает & в конце?',code:'docker pull nginx:latest &',opts:['Логическое И','Запускает в фоне','Перенаправляет','Условие'],ans:1,exp:'& — запускает в фоне, терминал свободен.'},
+  {cat:'Linux',sub:'Команды',type:'fill',q:'Использование диска:',code:'_____ -h',blank:'df',alts:[],hint:'disk free',exp:'df -h — файловые системы.'},
+  {cat:'Linux',sub:'Команды',type:'fill',q:'Использование RAM:',code:'_____ -h',blank:'free',alts:[],hint:'4 буквы',exp:'free -h — RAM.'},
+  {cat:'Linux',sub:'Команды',type:'choice',q:'cat /proc/cpuinfo?',opts:['Процессы','Информация о CPU','Память','Сеть'],ans:1,exp:'/proc/cpuinfo — инфо о процессоре.'},
+  {cat:'Linux',sub:'Команды',type:'choice',q:'Найти процесс по имени?',opts:['find nginx','ps nginx','ps aux | grep nginx','search nginx'],ans:2,exp:'ps aux | grep nginx.'},
+  {cat:'Linux',sub:'Команды',type:'fill',q:'Только корневой раздел:',code:'df -h | grep "_____"',blank:'/$',alts:[],hint:'$ = конец строки',exp:'$ = конец строки. /$ = строки заканчивающиеся на /.'},
+  {cat:'Linux',sub:'Команды',type:'choice',q:'Что делает journalctl?',opts:['Процессы','Системные логи','Управляет сервисами','Диск'],ans:1,exp:'journalctl — логи systemd.'},
+  {cat:'CI/CD',sub:'Концепции',type:'choice',q:'Что такое CI/CD?',opts:['Язык','Continuous Integration/Delivery — автоматизация','БД','Мониторинг'],ans:1,exp:'CI — проверка при push. CD — автодеплой.'},
+  {cat:'CI/CD',sub:'Концепции',type:'choice',q:'Зачем CI/CD?',opts:['Только крупным','Автопроверка — ловит ошибки до деплоя','Заменяет Git','Интернет'],ans:1,exp:'Пайплайн упадёт до продакшна если есть ошибки.'},
+  {cat:'CI/CD',sub:'Концепции',type:'choice',q:'GitLab CI vs GitHub Actions?',opts:['Хуже','Разный синтаксис, одинаковые концепции. GitLab популярнее в РФ','Actions быстрее','GitLab платный'],ans:1,exp:'В РФ GitLab популярнее — банки, госкомпании.'},
+  {cat:'CI/CD',sub:'Концепции',type:'match',q:'Термины CI/CD:',pairs:[['pipeline','весь процесс от push до деплоя'],['job','единица работы'],['runner','машина для выполнения'],['artifact','файл созданный в пайплайне']],exp:'Базовые термины — одинаковы везде.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'choice',q:'Где хранится файл?',opts:['Корень','.github/workflows/','ci/','scripts/'],ans:1,exp:'.github/workflows/pipeline.yml'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'fill',q:'Запустить команду в шаге:',code:'- name: Build\n  _____: docker build -t myapp .',blank:'run',alts:[],hint:'запустить',exp:'run: выполняет команду. uses: использует готовый action.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'choice',q:'Что делает actions/checkout@v3?',opts:['Ветка','Скачивает код на runner','Docker','Деплой'],ans:1,exp:'checkout скачивает код репо на виртуальную машину.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'fill',q:'На чём запускается:',code:'runs-on: _____',blank:'ubuntu-latest',alts:['ubuntu-22.04'],hint:'ubuntu-latest',exp:'GitHub предоставляет Ubuntu runner.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'choice',q:'Найди ошибку:',code:'- uses: action/checkout@v3',opts:['Версия','action/checkout → должно быть actions (с s)','uses','Ошибок нет'],ans:1,exp:'actions/checkout — с буквой s. Частая опечатка.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'choice',q:'Когда запускается?',code:'on:\n  push:\n    branches:\n      - main',opts:['По расписанию','Любой push','Push в main','PR'],ans:2,exp:'Только при push в main.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'fill',q:'Несколько команд в шаге:',code:'- name: Deploy\n  run: _____\n    docker compose down\n    docker compose up -d',blank:'|',alts:[],hint:'вертикальная черта',exp:'| в YAML позволяет multiline.'},
+  {cat:'CI/CD',sub:'GitHub Actions',type:'choice',q:'Что такое secrets?',code:'TOKEN: ${{ secrets.MY_TOKEN }}',opts:['Обычные переменные','Зашифрованные — пароли, токены','Docker конфиги','Артефакты'],ans:1,exp:'secrets — зашифрованные. Не видны в логах.'},
+];
+
+// ===== INIT =====
+api('GET', '/health').then(() => loadAndResumeCheck());
+startQuiz();
+</script>
+</body>
+</html>
