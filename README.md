@@ -1,5 +1,4 @@
 # Homelab Infrastructure
-
 Домашний сервер на базе ноутбука — запускаю всё сам, не завишу от облаков.
 
 ## Железо
@@ -10,7 +9,7 @@
 ## Сервисы
 
 ### Медиа
-- **Jellyfin** — стримингoвый медиасервер
+- **Jellyfin** — стриминговый медиасервер
 - **qBittorrent** — торрент клиент
 - **Prowlarr** — менеджер индексеров
 
@@ -34,10 +33,17 @@
 - Systemd таймеры для плановых задач
 - Ansible плейбуки для настройки сервера (в разработке)
 
+### Скрипты
+- **chiikawa_sync.py** — автоматическая загрузка аниме серий
+  - Проверяет Telegram канал по расписанию
+  - Скачивает новые серии длиннее 45 секунд
+  - Сохраняет в Jellyfin медиатеку с правильными именами
+  - Запускается через systemd таймер раз в сутки
+  - Конфигурация через переменные окружения
+
 ---
 
 # Homelab Infrastructure
-
 Home server running on a laptop — self-hosted, no cloud dependencies.
 
 ## Hardware
@@ -71,3 +77,11 @@ Home server running on a laptop — self-hosted, no cloud dependencies.
 - Docker with `restart: unless-stopped` on all services
 - Systemd timers for scheduled tasks
 - Ansible playbooks for server configuration (WIP)
+
+### Scripts
+- **chiikawa_sync.py** — automatic anime episode downloader
+  - Monitors Telegram channel on schedule
+  - Downloads new episodes longer than 45 seconds
+  - Saves to Jellyfin library with correct naming
+  - Runs via systemd timer once a day
+  - Configured via environment variables
