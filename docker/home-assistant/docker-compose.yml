@@ -1,0 +1,13 @@
+services:
+  homeassistant:
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    container_name: homeassistant
+    restart: unless-stopped
+    volumes:
+      - ./config:/config
+      - /etx/localtime:/etc/localtime:ro 
+      - /run/dbus:/run/dbus:ro
+    privileged: true #видит все устройства хоста
+    network_mode: host
+    environment:
+      TZ: Europe/Moscow
