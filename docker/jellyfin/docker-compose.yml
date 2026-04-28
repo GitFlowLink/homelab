@@ -2,9 +2,9 @@ services:
   jellyfin:
     image: jellyfin/jellyfin
     container_name: jellyfin
-    restart: unless-stopped
+    restart: unless-stopped 
     ports:
       - "8096:8096"
     volumes:
-      - ./config:/config
-      - /mnt/media:/media
+      - ./config:/config #конфиги
+      - /mnt/media:/media #медиафайлы
