@@ -1,0 +1,11 @@
+services:
+  eclipse-mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped 
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./config:/mosquitto/config #конфиги
+      - ./data:/mosquitto/data #сохранение сообщений между перезапусками
+      - ./log:/mosquitto/log #логи
