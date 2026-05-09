@@ -1,0 +1,19 @@
+- name: update apt cache
+  apt:
+    update_cache: true
+    
+- name: Download base utility
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - htop
+    - curl
+    - git
+    - vim
+    - net-tools
+    - ufw
+
+- name: set timezone to Asia/Yekaterinburg
+  community.general.timezone:
+    name: Asia/Yekaterinburg

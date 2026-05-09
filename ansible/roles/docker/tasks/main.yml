@@ -1,0 +1,14 @@
+- name: create direcotry
+  file:
+    path: /opt/mediaserver
+    state: directory
+
+- name: copy docker-compose
+  copy: 
+    src: docker-compose.yml
+    dest: /opt/mediaserver/docker-compose.yml
+
+- name: docker compose up
+  shell: docker compose up -d
+  args:
+    chdir: /opt/mediaserver

@@ -1,0 +1,22 @@
+- name: update jellyfin
+  hosts: homelab
+  become: true
+
+  tasks:
+    - name: docker compose pull
+      shell: docker compose pull
+      args:
+        chdir: /opt/mediaserver
+
+    - name: docker compose up
+      shell: docker compose up -d
+      args:
+        chdir: /opt/mediaserver
+    
+    - name: add cron job for updates
+      cron:
+        name: "update container"
+        minute: "0"
+        hour: "4"
+        weekday: "0"
+        job: "cd /opt/mediaserver && docker compose pull && docker compose up -d"
