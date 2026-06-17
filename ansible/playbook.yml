@@ -1,7 +1,6 @@
 - name: Base setup
   hosts: homelab
   become: true
-
   roles:
     - base
     - docker
