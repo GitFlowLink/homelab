@@ -1,0 +1,6 @@
+- name: yc
+  hosts: all
+  become: true
+
+  roles:
+    - base
