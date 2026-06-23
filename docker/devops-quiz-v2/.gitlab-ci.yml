@@ -1,0 +1,22 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build-job:
+  stage: build
+  image: docker:latest
+  script:
+    - docker compose build
+
+test-job:
+  stage: test
+  image: python:3.11
+  script:
+    - pip install flake8
+    - flake8 backend/app.py
+
+deploy-job:
+  stage: deploy
+    - apk add openssh-client
+    - ssh -i $SSH_KEY -o StrictHostKeyChecking=no root@192.168.1.152 "cd /root/devops-quiz-v2 && docker compose up -d"
