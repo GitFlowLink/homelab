@@ -4,8 +4,8 @@
     state: directory
 
 - name: copy docker-compose
-  copy: 
-    src: docker-compose.yml
+  copy:
+    src: "{{ playbook_dir }}/../docker/mediaserver/docker-compose.yml"
     dest: /opt/mediaserver/docker-compose.yml
 
 - name: docker compose up

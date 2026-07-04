@@ -1,0 +1,5 @@
+cloud_id    = "your-cloud-id"
+folder_id   = "your-folder-id"
+subnet_id   = "your-subnet-id"
+sa_key_file = "~/key.json"
+ssh_pub_key = "~/.ssh/id_rsa.pub"
