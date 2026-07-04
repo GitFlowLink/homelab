@@ -1,0 +1,33 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - 9091:9090
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prom_data:/var/prometheus
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=m0rdaxa
+      - GF_SECURITY_ADMIN_PASSWORD=1357901
+    volumes:
+      - ./grafana.yml:/etc/grafana/provisioning/datasources/prometheus.yml
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro'
+    command:
+      - '--path.rootfs=/host'
+volumes:
+  prom_data:
