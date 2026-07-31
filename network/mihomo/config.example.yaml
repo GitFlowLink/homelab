@@ -1,0 +1,86 @@
+mixed-port: 7890
+allow-lan: true
+bind-address: '*'
+mode: rule
+tcp-concurrent: true
+log-level: info
+external-controller: 0.0.0.0:9090
+
+tun:
+  endpoint-independent-nat: true
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  dns-hijack:
+    - 0.0.0.0:53
+
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    # ... локальные и региональные домены, исключённые из fake-ip
+  nameserver-policy:
+    # ... политика DNS для региональных доменов (напрямую через локальные резолверы)
+  nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+
+proxies:
+  - name: "vless-amsterdam"
+    type: vless
+    server: YOUR_VPS_IP
+    port: 443
+    uuid: YOUR_UUID_HERE
+    flow: xtls-rprx-vision
+    tls: true
+    servername: www.microsoft.com
+    reality-opts:
+      public-key: YOUR_REALITY_PUBLIC_KEY
+      short-id: YOUR_SHORT_ID
+    client-fingerprint: ios
+  - name: "hysteria2-amsterdam"
+    type: hysteria2
+    server: YOUR_VPS_IP
+    port: 8443
+    password: YOUR_PASSWORD_HERE
+    up: "100 Mbps"
+    down: "100 Mbps"
+    skip-cert-verify: true
+
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - hysteria2-amsterdam
+      - vless-amsterdam
+
+rules:
+  # Соцсети и мессенджеры — через прокси
+  # (правила по DOMAIN-SUFFIX / DOMAIN-KEYWORD / IP-CIDR)
+
+  # Российские сервисы — напрямую, без прокси (банки, маркетплейсы, соцсети)
+  # (правила DIRECT)
+
+  # CDN и облачная инфраструктура — через прокси
+  # (IP-CIDR диапазоны популярных CDN)
+
+  # Разработка (GitHub, Docker, пакетные репозитории) — через прокси
+  # (правила DOMAIN-SUFFIX)
+
+  # Медиа-сервисы для homelab (метаданные фильмов/сериалов) — через прокси
+  # (правила DOMAIN-SUFFIX)
+
+  # Торрент-трекеры и раздачи — через прокси
+  # (правила DOMAIN-SUFFIX / IP-CIDR)
+
+  # Аналитика и телеметрия сторонних SDK — через прокси
+  # (правила DOMAIN-SUFFIX)
+
+  - MATCH,DIRECT
